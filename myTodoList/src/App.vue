@@ -26,7 +26,7 @@
 </form>
 
 
-<div v-for="todo in todos" :key="todo.id" class="card mb-5">
+<div v-for="todo in todos" :key="todo.id" class="card mb-5" :class="{ 'has-background-success' : todo.done }">
 
   <div class="card-content">
 
@@ -34,13 +34,18 @@
 
       <div class="columns is-mobile is-vcentered">
 
-        <div class="column">
+        <div class="column"
+        :class="{'has-text-primary-light line-through' : todo.done}" >
           {{ todo.content }}
         </div>
 
         <div class="column is-5 has-text-right">
-          <button class="button is-success"> &check; </button>
-          <button class="button is-danger ml-2"> &cross; </button>
+          <button class="button"
+          @click="toggleDone(todo.id)"
+          :class="todo.done ? 'is-primary' : 'is-light'"
+          > &check; </button>
+          <button @click="deleteToDo(todo.id)"
+           class="button is-danger ml-2"> &cross; </button>
         </div>
 
       </div>
@@ -59,12 +64,13 @@
 
 <script setup>
 
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import { v4 as uuidv4 } from 'uuid';
 
 // todos
 
 const todos = ref([
+  
 ]);
 
 // add todo
@@ -79,6 +85,16 @@ const addToDo = () => {
   }
   todos.value.unshift(newTodo);
   newtodoContent.value = '';
+}
+
+const deleteToDo = (id) => {
+  // todos.value = todos.value.filter((todo) => todo.id !== id); 
+  todos.value.splice((todo) => todo.id, 1)
+}
+
+const toggleDone = (id) => {
+  const index = todos.value.findIndex((todo) => todo.id === id);
+  todos.value[index].done = !todos.value[index].done
 }
 
 </script>
@@ -114,5 +130,8 @@ body {
              0.1em 0.1em 1em rgba(0,0,0,0.3);
 }
 
+.line-through {
+  text-decoration: line-through;
+}
 
 </style>
