@@ -64,8 +64,14 @@
 
 <script setup>
 
-import { reactive, ref } from "vue";
-import { v4 as uuidv4 } from 'uuid';
+import { reactive, ref, onMounted } from "vue";
+import { db } from '@/firebase'
+import { collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
+
+// firebase refs
+
+const todosCollectionRef = collection(db, "todos");
+
 
 // todos
 
@@ -73,29 +79,48 @@ const todos = ref([
   
 ]);
 
+
+// получаем todo
+onMounted(() => {
+  onSnapshot(todosCollectionRef, (querySnapshot) => {
+  const fbTodos = [];
+  querySnapshot.forEach((doc) => {
+    const todo = {
+      id: doc.id,
+      content: doc.data().content,
+      done: doc.data().done,
+  };
+    fbTodos.push(todo);
+  });
+  todos.value = fbTodos;
+});
+});
+
+
 // add todo
 
 const newtodoContent = ref('');
 
 const addToDo = () => {
-  const newTodo = {
-    id: uuidv4(),
-    content: newtodoContent.value,
-    done: false,
-  }
-  todos.value.unshift(newTodo);
+  addDoc(todosCollectionRef, {
+  content: newtodoContent.value,
+  done: false,
+});
   newtodoContent.value = '';
 }
 
 const deleteToDo = (id) => {
-  // todos.value = todos.value.filter((todo) => todo.id !== id); 
-  todos.value.splice((todo) => todo.id, 1)
+  deleteDoc(doc(todosCollectionRef, id));
 }
 
 const toggleDone = (id) => {
   const index = todos.value.findIndex((todo) => todo.id === id);
-  todos.value[index].done = !todos.value[index].done
+
+  updateDoc(doc(todosCollectionRef, id), {
+    done: !todos.value[index].done
+});
 }
+
 
 </script>
 
