@@ -32,6 +32,7 @@
 
     <div class="content">
 
+      
       <div class="columns is-mobile is-vcentered">
 
         <div class="column"
@@ -66,11 +67,12 @@
 
 import { reactive, ref, onMounted } from "vue";
 import { db } from '@/firebase'
-import { collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc, query, orderBy, limit } from "firebase/firestore";
 
 // firebase refs
 
 const todosCollectionRef = collection(db, "todos");
+const todosCollectionRefQuery = query(todosCollectionRef, orderBy("date", "desc"));
 
 
 // todos
@@ -82,7 +84,7 @@ const todos = ref([
 
 // получаем todo
 onMounted(() => {
-  onSnapshot(todosCollectionRef, (querySnapshot) => {
+  onSnapshot(todosCollectionRefQuery, (querySnapshot) => {
   const fbTodos = [];
   querySnapshot.forEach((doc) => {
     const todo = {
@@ -105,6 +107,7 @@ const addToDo = () => {
   addDoc(todosCollectionRef, {
   content: newtodoContent.value,
   done: false,
+  date: Date.now(),
 });
   newtodoContent.value = '';
 }
